@@ -1,0 +1,57 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Policy;
+using System.Text.RegularExpressions;
+
+public class Kata
+{
+    public static Dictionary<string, int> ParseMolecule(string formula)
+    {
+        Dictionary<string, int> dic = new Dictionary<string, int>();
+        MatchCollection matches = Regex.Matches(formula, @"([A-Z][a-z]*)(\d*)|(\((?>[^()]+|\((?<DEPTH>)|\)(?<-DEPTH>))*(?(DEPTH)(?!))\))(\d*)|(\[(?>[^\[\]]+|\[(?<DEPTH>)|\](?<-DEPTH>))*(?(DEPTH)(?!))\])(\d*)|(\{(?>[^\{\}]+|\{(?<DEPTH>)|\}(?<-DEPTH>))*(?(DEPTH)(?!))\})(\d*)");
+        foreach (Match match in matches)
+        {
+            GroupCollection groups = match.Groups;
+            string element= "";
+            int count= 0;
+            for (int i = 1; i <= 4; i++)
+            {
+                if (groups[2 * i-1].Value != "")
+                {
+                    element = groups[2 * i-1].Value;
+                    count = groups[2*i].Value == "" ? 1 : Convert.ToInt32(groups[2*i].Value);
+                    break;
+                }
+            }
+            if ("([{".Contains(element[0].ToString()))
+            {
+                Dictionary<string, int> d = ParseMolecule(element.Substring(1, element.Length - 2));
+                foreach (var e in d)
+                {
+                    if (dic.ContainsKey(e.Key))
+                        dic[e.Key] += e.Value*count;
+                    else
+                        dic.Add(e.Key, e.Value * count);
+                }
+            }
+            else
+            {
+                if (dic.ContainsKey(element))
+                    dic[element] += count;
+                else
+                    dic.Add(element, count);
+            }
+            
+        }
+        return dic;
+    }
+    static void Main()
+    {
+        foreach (var d in ParseMolecule("K4[ON(SO3)2]2"))
+        { 
+            Console.WriteLine(d.Key + ' ' + d.Value);
+        }
+        Console.ReadKey();
+    }
+}
