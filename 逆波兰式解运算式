@@ -1,0 +1,126 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Security.Policy;
+using System.Text;
+using System.Text.RegularExpressions;
+
+public class Kata
+{
+    public static double calculate(string s)
+    {
+        Stack<string> ex=new Stack<string>();
+        Stack<char> op=new Stack<char>();
+        Stack<string> result=new Stack<string>();
+        Stack<string> loop=new Stack<string>();
+        string Num = "";
+        bool isDigit = false;
+        for (int i=0;i<s.Length;i++)
+        {
+            if ((s[i] >= '0' && s[i] <= '9')||s[i]=='.')
+            {
+                isDigit = true;
+                Num += s[i];
+            }
+            else
+            {
+                isDigit = false;
+                if (Num != "")
+                {
+                    ex.Push(Num);
+                    Num = "";
+                }
+            }
+            switch (s[i])
+            {
+                case '(':op.Push(s[i]);
+                    break;
+                case ')':
+                    if(op.Count != 0)
+                        while (op.Peek() != '(')
+                        {
+                            ex.Push(op.Pop().ToString());
+                        }
+                    op.Pop();
+                    break;
+                case '+':
+                case '-':
+                    if (op.Count != 0)
+                        while (op.Count != 0&& op.Peek() != '(')
+                        {   
+                            ex.Push(op.Pop().ToString());
+                        }
+                    op.Push(s[i]);
+                    break;
+                case '*':
+                case '^':
+                case '/':
+                    if (op.Count != 0)
+                        while (op.Count!=0&& (op.Peek() == '*' || op.Peek() == '/' ||op.Peek() == '^'))
+                        {
+                            ex.Push(op.Pop().ToString());
+                        }
+                    op.Push(s[i]);
+                    break;
+                case ' ': break;
+            }
+        }
+        while (op.Count!=0)
+        {
+            ex.Push(op.Pop().ToString());
+        }
+        while (ex.Count != 0)
+        {
+            loop.Push(ex.Pop());
+        }
+        while (loop.Count != 0)
+        {
+            string t = loop.Pop();
+            if ((t == "+") || (t == "-") || (t == "*") || (t == "/")||(t == "^"))
+            {
+                string operatorA = result.Pop();
+                string operatorB = result.Pop();
+                string abResult = calculateAB(operatorA, operatorB, t);
+                result.Push(abResult);
+            }
+            else
+            {
+                result.Push(t);
+            }
+        }
+        
+        return Convert.ToDouble(result.Pop());
+    }
+
+    public static string calculateAB(string A, string B, string sign)
+    {
+        double c;
+        switch (sign)
+        {
+            case "+":
+                c = Convert.ToDouble(B) + Convert.ToDouble(A);
+                return c.ToString();
+            case "-":
+                c = Convert.ToDouble(B) - Convert.ToDouble(A);
+                return c.ToString();
+            case "*":
+                c = Convert.ToDouble(B) * Convert.ToDouble(A);
+                return c.ToString();
+            case "/":
+                c = Convert.ToDouble(B) / Convert.ToDouble(A);
+                return c.ToString();
+            case "^":
+                c = Math.Pow(Convert.ToDouble(B), Convert.ToDouble(A));
+                return c.ToString();
+            default: break;
+        }
+        return null;
+    }
+
+    static void Main()
+    {
+        Console.WriteLine(calculate("2.5*2.5 "));
+        Console.ReadKey();
+    }
+}
