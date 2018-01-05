@@ -1,0 +1,132 @@
+using System.Linq;
+using System.Collections.Generic;
+public class Skyscrapers
+{
+    public static int[][] SolvePuzzle(int[] clues)
+    {
+
+        var verticals = new List<Variants>
+          {
+            new Variants(clues[0], clues[20]),
+            new Variants(clues[1], clues[19]),
+            new Variants(clues[2], clues[18]),
+            new Variants(clues[3], clues[17]),
+            new Variants(clues[4], clues[16]),
+            new Variants(clues[5], clues[15]),
+            new Variants(clues[6], clues[14])
+          };
+
+        var horizontals = new List<Variants>
+          {
+            new Variants(clues[27], clues[7]),
+            new Variants(clues[26], clues[8]),
+            new Variants(clues[25], clues[9]),
+            new Variants(clues[24], clues[10]),
+            new Variants(clues[23], clues[11]),
+            new Variants(clues[22], clues[12]),
+            new Variants(clues[21], clues[13])
+          };
+
+        while (horizontals.Any(h => !h.isSingle()) || verticals.Any(v => !v.isSingle()))
+        {
+            for (int y = 0; y < 7; y++)
+            {
+                for (int x = 0; x < 7; x++)
+                {
+                    verticals[y].FindBad(x).ForEach(h => horizontals[x].WipeInters(y, h));
+                    horizontals[y].FindBad(x).ForEach(h => verticals[x].WipeInters(y, h));
+                }
+            }
+        }
+        return horizontals.Select(row => row.getFirst()).ToArray();
+    }
+}
+
+public class Variants
+{
+    private static readonly int[] nums = new[] { 1, 2, 3, 4, 5, 6, 7 };
+
+    private static readonly Number[] Numbers =
+      FindVars(nums).Select(heights => new Number(heights.ToArray())).ToArray();
+
+    private static IEnumerable<List<int>> FindVars(IEnumerable<int> elems)
+    {
+        var enumerable = elems as int[] ?? elems.ToArray();
+        return enumerable.Count() == 1
+               ? MyList(MyList(enumerable.First()))
+               : enumerable.SelectMany(el => FindVars(enumerable.Except(new int[] { el })).Select(sub => new int[] { el }.Concat(sub).ToList())).ToList();
+    }
+
+    private static List<T> MyList<T>(T e)
+    {
+        return new List<T> { e };
+    }
+
+    private readonly List<Number> numbers = new List<Number>();
+
+    public Variants(int aRest, int bRest)
+    {
+        foreach (Number number in Numbers)
+            if (number.isOK(aRest, bRest)) numbers.Add(number);
+    }
+
+    public List<int> FindBad(int pos)
+    {
+        var variants = new List<int>(nums);
+        foreach (var number in numbers)
+            variants.Remove(number.heights[pos]);
+        return variants;
+    }
+
+    public bool isSingle()
+    {
+        return numbers.Count == 1;
+    }
+
+    public void WipeInters(int pos, int height)
+    {
+        numbers.RemoveAll(street => street.heights[pos] == height);
+    }
+
+    public int[] getFirst()
+    {
+        return numbers[0].heights;
+    }
+
+}
+
+public struct Number
+{
+    public int[] heights;
+    int x;
+    int y;
+
+    public Number(IEnumerable<int> heights)
+    {
+        this.heights = heights as int[] ?? heights.ToArray();
+        x = visibleCount(this.heights);
+        y = visibleCount(this.heights.Reverse());
+    }
+
+    private static int visibleCount(IEnumerable<int> heights)
+    {
+        var c = 1;
+        var enumerable = heights as int[] ?? heights.ToArray();
+        var max = enumerable.First();
+        for (int i = 1; i < 7; i++)
+        {
+            var h = enumerable.ElementAt(i);
+            if (max < h)
+            {
+                max = h;
+                c++;
+            }
+        }
+        return c;
+    }
+
+    public bool isOK(int aRest, int bRest)
+    {
+        return (aRest == 0 || x == aRest) && (bRest == 0 || y == bRest);
+    }
+}
