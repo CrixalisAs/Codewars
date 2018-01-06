@@ -1,0 +1,22 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+
+namespace Codewars
+{
+    public class BinaryRegexp
+    {
+        public static string MultipleOf7() => @"^(1((0((01)*(111)*(10(01*00)*01*011)*)*00)*(1(01*00)*01*011((01)*(111)*(10(01*00)*01*011)*)*00)*(0((01)*(111)*(10(01*00)*01*011)*)*110)*(1(01*00)*01*011((01)*(111)*(10(01*00)*01*011)*)*110)*(1(01*00)*01*010)*(0((01)*(111)*(10(01*00)*01*011)*)*10(01*00)*01*010)*(1(01*00)*01*011((01)*(111)*(10(01*00)*01*011)*)*10(01*00)*01*010)*)*(1|0((01)*(111)*(10(01*00)*01*011)*)*10|1(01*00)*01*011((01)*(111)*(10(01*00)*01*011)*)*10)(01*00)*10*)+$|^0$";
+        static void Main(string[] args)
+        {
+            string pattern = MultipleOf7();
+            for (int i = 0; i < args.Length; i++)
+            {
+                Console.WriteLine(Regex.IsMatch(args[i], pattern));
+            }
+        }
+    }
+}
